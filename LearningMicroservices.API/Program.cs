@@ -1,12 +1,17 @@
-﻿using Mapster;
-using MapsterMapper;
-using System.Reflection;
-using MediatR;
-using LearningMicroservices.Application.Orders.Commands.CreateOrder;
-using LearningMicroservices.Application.Orders.Queries.GetOrderById;
-using LearningMicroservices.Application.Orders.DTOs;
-using FluentValidation;
+﻿using FluentValidation;
 using Infrastructure;
+using LearningMicroservices.Application.Orders.Commands.CreateOrder;
+using LearningMicroservices.Application.Orders.DTOs;
+using LearningMicroservices.Application.Orders.Queries.GetOrderById;
+using LearningMicroservices.Application.Products.Commands;
+using LearningMicroservices.Application.Products.DTOs;
+using LearningMicroservices.Application.Products.Queries.GetAllProducts;
+using LearningMicroservices.Application.Products.Queries.GetProductById;
+using Mapster;
+using MapsterMapper;
+using Marten;
+using MediatR;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +69,27 @@ app.MapGet("/api/orders/{id:guid}", async (Guid id, IMediator mediator) =>
 .WithTags("Orders")
 .Produces<OrderDto>(StatusCodes.Status200OK)
 .Produces(StatusCodes.Status404NotFound);
+
+#region Product APIs
+// ✅ Minimal API with MediatR
+app.MapPost("/products", async (CreateProductCommand command, IMediator mediator) =>
+{
+    var id = await mediator.Send(command);
+    return Results.Created($"/products/{id}", new { id });
+});
+
+app.MapGet("/products/{id:guid}", async (Guid id, IMediator mediator) =>
+{
+    var product = await mediator.Send(new GetProductByIdQuery(id));
+    return product is not null ? Results.Ok(product) : Results.NotFound();
+});
+
+app.MapGet("/products", async (IMediator mediator) =>
+{
+    var products = await mediator.Send(new GetAllProductsQuery());
+    return Results.Ok(products);
+});
+#endregion
 
 app.Run();
 

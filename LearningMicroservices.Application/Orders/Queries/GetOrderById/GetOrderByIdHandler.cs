@@ -3,23 +3,22 @@ using LearningMicroservices.Application.Orders.DTOs;
 using MediatR;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using LearningMicroservices.Domain.Interfaces;
 
 namespace LearningMicroservices.Application.Orders.Queries.GetOrderById
 {
     public class GetOrderByIdHandler : IRequestHandler<GetOrderByIdQuery, OrderDto?>
     {
-        private readonly IAppDbContext _context;
+        private readonly IOrderRepository _orderRepository;
 
-        public GetOrderByIdHandler(IAppDbContext context)
+        public GetOrderByIdHandler(IOrderRepository orderRepository)
         {
-            _context = context;
+            _orderRepository = orderRepository;
         }
 
         public async Task<OrderDto?> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
         {
-            var order = await _context.Orders
-                .Include(o => o.Customer)
-                .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
+            var order = await _orderRepository.GetByIdAsync(request.Id);
 
             return order?.Adapt<OrderDto>();
         }

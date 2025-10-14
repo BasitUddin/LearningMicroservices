@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using Infrastructure;
 using LearningMicroservices.Application.Orders.Commands.CreateOrder;
 using LearningMicroservices.Application.Orders.DTOs;
@@ -11,6 +12,7 @@ using Mapster;
 using MapsterMapper;
 using Marten;
 using MediatR;
+using Microsoft.AspNetCore.Diagnostics;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +21,32 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 
 var app = builder.Build();
+
+// Add middleware early in the pipeline
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+        if (exception is ValidationException validationException)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsJsonAsync(new
+            {
+                Errors = validationException.Errors.Select(e => e.Value)
+            });
+            return;
+        }
+        // Handle generic exceptions
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsJsonAsync(new
+        {
+            Error = "An unexpected error occurred. Please try again later."
+        });
+    });
+});
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -3,6 +3,9 @@ using FluentValidation;
 using Infrastructure.Persistence;
 using LearningMicroservices.Application.Orders.Commands.CreateOrder;
 using LearningMicroservices.Application.Products.Commands;
+using LearningMicroservices.Domain.Interfaces;
+using LearningMicroservices.Domain.Interfaces.Base;
+using LearningMicroservices.Infrastructure.Repositories;
 using Mapster;
 using MapsterMapper;
 using Marten;
@@ -29,8 +32,7 @@ namespace Infrastructure
                 //options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddScoped<IAppDbContext>(sp =>
-                sp.GetRequiredService<AppDbContext>());
+            services.AddScoped<AppDbContext>();
 
             // Register Marten document store
             services.AddMarten(options =>
@@ -85,11 +87,15 @@ namespace Infrastructure
 
             services.AddValidatorsFromAssembly(typeof(CreateProductCommand).Assembly);
 
+
             // ✅ Pipeline for automatic validation
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
+            // Registering Repositories
+            services.AddTransient(typeof(IOrderRepository), typeof(OrderRepository));
 
-            
+
+
 
 
 

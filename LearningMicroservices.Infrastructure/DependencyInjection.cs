@@ -1,11 +1,7 @@
-﻿using Application.Common.Interfaces;
-using FluentValidation;
+﻿using FluentValidation;
 using Infrastructure.Persistence;
-using LearningMicroservices.Application.Orders.Commands.CreateOrder;
-using LearningMicroservices.Application.Products.Commands;
-using LearningMicroservices.Domain.Interfaces;
-using LearningMicroservices.Domain.Interfaces.Base;
-using LearningMicroservices.Infrastructure.Repositories;
+using OrderManagement.Infrastructure.Repositories;
+using OrderManagement.Infrastructure.Services;
 using Mapster;
 using MapsterMapper;
 using Marten;
@@ -14,8 +10,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 using System.Reflection;
 using Weasel.Core;
+using OrderManagement.Domain.Interfaces;
+using OrderManagement.Application.Orders.Commands.CreateOrder;
+using OrderManagement.Application.Products.Commands;
 
 namespace Infrastructure
 {
@@ -62,6 +62,15 @@ namespace Infrastructure
                 });
             });
 
+            // Redis Configuration
+            services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                return ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis")!);
+            });
+
+            // Register Cache Service
+            services.AddScoped<ICacheService, RedisCacheService>();
+
             return services;
         }
 
@@ -93,6 +102,8 @@ namespace Infrastructure
 
             // Registering Repositories
             services.AddTransient(typeof(IOrderRepository), typeof(OrderRepository));
+
+            TypeAdapterConfig.GlobalSettings.Scan(typeof(MappingConfig).Assembly);
 
 
 

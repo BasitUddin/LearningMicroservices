@@ -1,12 +1,12 @@
 ﻿using FluentValidation;
-using LearningMicroservices.Application.Orders.Commands.CreateOrder;
+using OrderManagement.Application.Orders.Commands.CreateOrder;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LearningMicroservices.Application.Products.Commands
+namespace OrderManagement.Application.Products.Commands
 {
     public class CreateProductValidator : AbstractValidator<CreateProductCommand>
     {

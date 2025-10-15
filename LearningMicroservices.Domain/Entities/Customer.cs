@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LearningMicroservices.Domain.Entities
+namespace OrderManagement.Domain.Entities
 {
     public class Customer
     {

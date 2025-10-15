@@ -1,13 +1,13 @@
-﻿using LearningMicroservices.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OrderManagement.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LearningMicroservices.Infrastructure.Persistence.Configurations
+namespace OrderManagement.Infrastructure.Persistence.Configurations
 {
     public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
     {

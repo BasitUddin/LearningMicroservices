@@ -1,20 +1,20 @@
 ﻿using Infrastructure.Persistence;
-using LearningMicroservices.Domain.Entities;
-using LearningMicroservices.Domain.Interfaces;
-using LearningMicroservices.Domain.Interfaces.Base;
-using LearningMicroservices.Infrastructure.Repositories.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using OrderManagement.Domain.Entities;
+using OrderManagement.Domain.Interfaces;
+using OrderManagement.Infrastructure.Repositories.Base;
+using Microsoft.EntityFrameworkCore;
 
-namespace LearningMicroservices.Infrastructure.Repositories
+namespace OrderManagement.Infrastructure.Repositories
 {
     public class OrderRepository : BaseRepository<Order>, IOrderRepository
     {
         public OrderRepository(AppDbContext context) : base(context)
         {
+        }
+
+        public async Task<Order?> GetByIdWithCustomerAsync(Guid id)
+        {
+             return await base._context.Orders.Include(x => x.Customer).FirstOrDefaultAsync(x => x.Id == id);
         }
     }
 }

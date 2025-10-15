@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LearningMicroservices.Infrastructure.Migrations
+namespace OrderManagement.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class testPostgreSQL : Migration

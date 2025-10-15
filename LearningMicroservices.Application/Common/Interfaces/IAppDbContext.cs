@@ -1,7 +1,7 @@
-﻿using LearningMicroservices.Application.Products.DTOs;
-using LearningMicroservices.Domain.Entities;
+﻿using OrderManagement.Application.Products.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using OrderManagement.Domain.Entities;
 
 namespace Application.Common.Interfaces
 {

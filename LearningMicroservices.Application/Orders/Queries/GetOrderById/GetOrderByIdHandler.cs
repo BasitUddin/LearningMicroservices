@@ -1,11 +1,11 @@
 ﻿using Application.Common.Interfaces;
-using LearningMicroservices.Application.Orders.DTOs;
+using OrderManagement.Application.Orders.DTOs;
 using MediatR;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
-using LearningMicroservices.Domain.Interfaces;
+using OrderManagement.Domain.Interfaces;
 
-namespace LearningMicroservices.Application.Orders.Queries.GetOrderById
+namespace OrderManagement.Application.Orders.Queries.GetOrderById
 {
     public class GetOrderByIdHandler : IRequestHandler<GetOrderByIdQuery, OrderDto?>
     {
@@ -18,8 +18,7 @@ namespace LearningMicroservices.Application.Orders.Queries.GetOrderById
 
         public async Task<OrderDto?> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
         {
-            var order = await _orderRepository.GetByIdAsync(request.Id);
-
+            var order = await _orderRepository.GetByIdWithCustomerAsync(request.Id);
             return order?.Adapt<OrderDto>();
         }
     }

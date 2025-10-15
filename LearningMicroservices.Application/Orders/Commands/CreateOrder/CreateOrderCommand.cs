@@ -1,7 +1,10 @@
-﻿using MediatR;
+﻿using OrderManagement.Application.Orders.DTOs;
+using OrderManagement.Domain.Entities;
+using OrderManagement.Domain.ValueObjects;
+using MediatR;
 
 
-namespace LearningMicroservices.Application.Orders.Commands.CreateOrder
+namespace OrderManagement.Application.Orders.Commands.CreateOrder
 {
-    public record CreateOrderCommand(Guid CustomerId, decimal TotalAmount) : IRequest<Guid>;
+    public record CreateOrderCommand(Guid CustomerId, Address ShippingAddress, List<OrderItemDto> Items) : IRequest<Guid>;
 }

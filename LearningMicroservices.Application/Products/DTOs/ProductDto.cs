@@ -1,6 +1,6 @@
 ﻿
 
-namespace LearningMicroservices.Application.Products.DTOs
+namespace OrderManagement.Application.Products.DTOs
 {
     public class Product
     {

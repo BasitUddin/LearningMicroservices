@@ -1,6 +1,6 @@
-@LearningMicroservices.API_HostAddress = http://localhost:5171
+@OrderManagement.API_HostAddress = http://localhost:5171
 
-GET {{LearningMicroservices.API_HostAddress}}/weatherforecast/
+GET {{OrderManagement.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###

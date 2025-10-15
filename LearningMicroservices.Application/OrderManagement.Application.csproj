@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LearningMicroservices.Domain\LearningMicroservices.Domain.csproj" />
+    <ProjectReference Include="..\LearningMicroservices.Domain\OrderManagement.Domain.csproj" />
   </ItemGroup>
 
 </Project>

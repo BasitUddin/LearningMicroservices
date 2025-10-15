@@ -1,8 +1,9 @@
-﻿using LearningMicroservices.Domain.Entities;
-using LearningMicroservices.Domain.Interfaces;
+﻿using OrderManagement.Domain.Entities;
+using OrderManagement.Domain.Interfaces;
+using Mapster;
 using MediatR;
 
-namespace LearningMicroservices.Application.Orders.Commands.CreateOrder
+namespace OrderManagement.Application.Orders.Commands.CreateOrder
 {
     public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Guid>
     {
@@ -14,14 +15,23 @@ namespace LearningMicroservices.Application.Orders.Commands.CreateOrder
 
         public async Task<Guid> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
-            var order = new Order
+            try
             {
-                CustomerId = request.CustomerId,
-                TotalAmount = request.TotalAmount,
-            };
-            var data = await _orderRepository.AddAsync(order);
+                var order = request.Adapt<Order>();
+                //foreach (var itemDto in request.items)
+                //{
+                //    var money = new Money(itemDto.UnitPrice, "PKR");
+                //    order.AddItem(itemDto.ProductId, itemDto.Quantity, money);
+                //}
+                //order.TotalAmount = order.GetTotal().Amount;
+                var data = await _orderRepository.AddAsync(order);
 
-            return data.Id;
+                return data.Id;
+            }
+            catch(Exception ex)
+            {
+                return Guid.Empty;
+            }
         }
     }
 }

@@ -1,19 +1,20 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using Infrastructure;
-using LearningMicroservices.Application.Orders.Commands.CreateOrder;
-using LearningMicroservices.Application.Orders.DTOs;
-using LearningMicroservices.Application.Orders.Queries.GetOrderById;
-using LearningMicroservices.Application.Products.Commands;
-using LearningMicroservices.Application.Products.DTOs;
-using LearningMicroservices.Application.Products.Queries.GetAllProducts;
-using LearningMicroservices.Application.Products.Queries.GetProductById;
+using OrderManagement.Application.Orders.Commands.CreateOrder;
+using OrderManagement.Application.Orders.DTOs;
+using OrderManagement.Application.Orders.Queries.GetOrderById;
+using OrderManagement.Application.Products.Commands;
+using OrderManagement.Application.Products.DTOs;
+using OrderManagement.Application.Products.Queries.GetAllProducts;
+using OrderManagement.Application.Products.Queries.GetProductById;
 using Mapster;
 using MapsterMapper;
 using Marten;
 using MediatR;
 using Microsoft.AspNetCore.Diagnostics;
 using System.Reflection;
+using OrderManagement.Application.Orders.Queries.GetOrderById;
+using Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -114,8 +115,15 @@ app.MapGet("/products/{id:guid}", async (Guid id, IMediator mediator) =>
 
 app.MapGet("/products", async (IMediator mediator) =>
 {
-    var products = await mediator.Send(new GetAllProductsQuery());
-    return Results.Ok(products);
+    try
+    {
+        var products = await mediator.Send(new GetAllProductsQuery());
+        return Results.Ok(products);
+    }
+    catch (Exception ex) 
+    { 
+        return Results.NotFound();
+    }
 });
 #endregion
 

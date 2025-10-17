@@ -28,7 +28,7 @@ namespace UserManagement.Infrastructure.Services
         public async Task<TokenResponse> GenerateTokenAsync(Users user)
         {
             var roles = await _userManager.GetRolesAsync(user);
-            var authClaims = GetUserClaims(user.Id, user.Email, roles);
+            var authClaims = GetUserClaims(user.Id, user.FullName, user.Email, roles);
 
             var token = GetToken(authClaims);
             return new TokenResponse
@@ -40,12 +40,13 @@ namespace UserManagement.Infrastructure.Services
             };
         }
 
-        public ClaimsIdentity GetUserClaims(Guid id, string email, IList<string> roles)
+        public ClaimsIdentity GetUserClaims(Guid id, string fullName, string email, IList<string> roles)
         {
             var authClaims = new ClaimsIdentity(new Claim[]
             {
                 new Claim(ClaimTypes.NameIdentifier, id.ToString()),
                 new Claim(ClaimTypes.Email, email ?? ""),
+                new Claim(ClaimTypes.Name, fullName ?? ""),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             });
 

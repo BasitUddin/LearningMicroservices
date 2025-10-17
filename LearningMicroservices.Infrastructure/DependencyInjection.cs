@@ -16,6 +16,9 @@ using Weasel.Core;
 using OrderManagement.Domain.Interfaces;
 using OrderManagement.Application.Orders.Commands.CreateOrder;
 using OrderManagement.Application.Products.Commands;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Infrastructure
 {
@@ -25,6 +28,24 @@ namespace Infrastructure
             this IServiceCollection services,
             IConfiguration configuration)
         {
+
+            // JWT Auth
+            var jwt = configuration.GetSection("Jwt");
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwt["Issuer"],
+                    ValidAudience = jwt["Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!))
+                };
+            });
+            services.AddAuthorization();
             // ---------------------------------------------------------
             // ✅ Database (PostgreSQL + EF Core)
             // ---------------------------------------------------------
@@ -53,14 +74,7 @@ namespace Infrastructure
             // ✅ API + Swagger
             // ---------------------------------------------------------
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen(options =>
-            {
-                options.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = "Learning MicroServices API",
-                    Version = "v1"
-                });
-            });
+
 
             // Redis Configuration
             services.AddSingleton<IConnectionMultiplexer>(sp =>

@@ -8,7 +8,6 @@ namespace UserManagement.Domain.Interfaces
     public interface IJWTService
     {
         Task<TokenResponse> GenerateTokenAsync(Users user);
-        ClaimsIdentity GetUserClaims(Guid id, string email, IList<string> roles);
         JwtSecurityToken GetToken(ClaimsIdentity authClaims);
     }
 }

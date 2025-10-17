@@ -1,25 +1,92 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Infrastructure;
+using Mapster;
+using MapsterMapper;
+using Marten;
+using MassTransit;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Models;
+using OrderManagement.API.Consumers;
 using OrderManagement.Application.Orders.Commands.CreateOrder;
 using OrderManagement.Application.Orders.DTOs;
+using OrderManagement.Application.Orders.Queries.GetOrderById;
 using OrderManagement.Application.Orders.Queries.GetOrderById;
 using OrderManagement.Application.Products.Commands;
 using OrderManagement.Application.Products.DTOs;
 using OrderManagement.Application.Products.Queries.GetAllProducts;
 using OrderManagement.Application.Products.Queries.GetProductById;
-using Mapster;
-using MapsterMapper;
-using Marten;
-using MediatR;
-using Microsoft.AspNetCore.Diagnostics;
 using System.Reflection;
-using OrderManagement.Application.Orders.Queries.GetOrderById;
-using Infrastructure;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+
+// 🔹 Register consumer
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<UserCreatedConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        // Queue for consuming user events
+        cfg.ReceiveEndpoint("user-created-queue", e =>
+        {
+            e.ConfigureConsumer<UserCreatedConsumer>(context);
+        });
+    });
+});
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "User Management API",
+        Version = "v1",
+        Description = "JWT Auth Example"
+    });
+
+    // 🔒 Define JWT authentication scheme
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer", // <-- Important
+        BearerFormat = "JWT",
+        Description = "Enter your JWT token below (no need to add 'Bearer ' manually)"
+    });
+
+    // 🔒 Apply JWT globally
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header
+            },
+            new List<string>()
+        }
+    });
+});
 
 var app = builder.Build();
 
@@ -113,10 +180,11 @@ app.MapGet("/products/{id:guid}", async (Guid id, IMediator mediator) =>
     return product is not null ? Results.Ok(product) : Results.NotFound();
 });
 
-app.MapGet("/products", async (IMediator mediator) =>
+app.MapGet("/products", async (ClaimsPrincipal User, IMediator mediator) =>
 {
     try
     {
+        var user = User.Identity?.Name;
         var products = await mediator.Send(new GetAllProductsQuery());
         return Results.Ok(products);
     }
@@ -124,8 +192,11 @@ app.MapGet("/products", async (IMediator mediator) =>
     { 
         return Results.NotFound();
     }
-});
+}).RequireAuthorization();
 #endregion
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();
 

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using MassTransit;
+using MicroServices.Shared.Messages;
+using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using UserManagement.Application.Interfaces;
@@ -14,12 +16,14 @@ namespace UserManagement.Application.Services
         private readonly UserManager<Users> _userManager;
         private readonly IJWTService _jWTService;
         private readonly SignInManager<Users> _signInManager;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public AuthService(UserManager<Users> userManager, IJWTService jWTService, SignInManager<Users> signInManager)
+        public AuthService(UserManager<Users> userManager, IJWTService jWTService, SignInManager<Users> signInManager, IPublishEndpoint publishEndpoint)
         {
             _userManager = userManager;
             _jWTService = jWTService;
             _signInManager = signInManager;
+            _publishEndpoint = publishEndpoint;
         }
         public async Task<LoginResponse> LoginAsync(LoginRequest request)
         {
@@ -78,6 +82,13 @@ namespace UserManagement.Application.Services
                 if (!result.Succeeded)
                     throw new Exception(result.Errors.ToString());
 
+                // 🔹 Publish event to RabbitMQ
+                await _publishEndpoint.Publish(new UserCreatedEvent
+                {
+                    UserId = user.Id,
+                    FullName = user.FullName!,
+                    Email = user.Email!
+                });
                 return "User created successfully!";
             }
             catch(Exception ex)
